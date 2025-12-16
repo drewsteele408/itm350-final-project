@@ -32,5 +32,6 @@ EXPOSE 25565
 # Let the base image entrypoint handle everything,
 # unless you want to override it (not needed normally).
 
-# This is blank to test workflow
+# This IS A TEST FOR THE WORKFLOW
+
 
