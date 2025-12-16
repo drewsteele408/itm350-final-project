@@ -1,1 +1,1 @@
-Final ITM-350 project
+Final ITM-350 project: Minecraft Server
