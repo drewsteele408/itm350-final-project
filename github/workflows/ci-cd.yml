@@ -1,0 +1,60 @@
+name: CI/CD Pipeline
+
+# Trigger the workflow on push to main branch and pull requests
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Check out the code from the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      # Set up Docker Buildx 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      
+      # Build the Docker image
+      - name: Build Docker image
+        run: docker build -t minecraft-server-2:latest .
+
+      # Run unit tests (added by Dylann)
+      - name: Run unit tests
+        run: |
+          chmod +x tests/unit/test_config_validation.sh
+          ./tests/unit/test_config_validation.sh
+
+      # Run integration tests (added by Dylann)
+      - name: Run integration tests
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y netcat-openbsd
+          chmod +x tests/integration/test_container_startup.sh
+          ./tests/integration/test_container_startup.sh
+
+      # Run tests/validation
+      - name: Validate Docker image
+        run: docker images | grep minecraft-server
+      
+      # Log in to Docker Hub using access token
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+      
+      # Tag the image with your Docker Hub username
+      - name: Tag Docker image
+        run: docker tag minecraft-server-2:latest ${{ secrets.DOCKER_USERNAME }}/minecraft-server-2:latest
+      
+      # Push the image to Docker Hub
+      - name: Push image to Docker Hub
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/minecraft-server-2:latest
